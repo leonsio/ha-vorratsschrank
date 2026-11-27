@@ -43,11 +43,11 @@ Bei mehreren Raspberry Pis lässt sich optional mit `entry_id` die gewünschte H
 
 ## Bestand verwalten
 
-Die Suche findet Produkte nach Name, Marke oder EAN und lässt sich mit dem Kategoriefilter kombinieren. Tippe auf einen Produktnamen, um die Produktsuche im Hintergrund erneut anzustoßen oder alle Stücke der aktuellen Zeile samt MHD in eine andere Kategorie zu verschieben.
+Die Suche findet Produkte nach Name, Marke oder EAN und lässt sich mit dem Kategoriefilter kombinieren. Tippe auf ein Produkt, um sein großes Bild, die Produktinfos und MHD-Gruppen in einem eigenen Dialog anzuzeigen. Dort kannst du bearbeiten, die Produktsuche erneut anstoßen oder alle Stücke der aktuellen Zeile samt MHD in eine andere Kategorie verschieben.
 
 ## Mit dem iPhone einbuchen
 
-1. Die Karte in Safari oder der Home-Assistant-App öffnen. **Barcode fotografieren** wählen. iOS öffnet die Rückkamera bzw. die Fotoauswahl.
+1. Die Karte in Safari oder der Home-Assistant-App öffnen. **＋ Hinzufügen** und dann **Barcode fotografieren** wählen. iOS öffnet die Rückkamera bzw. die Fotoauswahl.
 2. Einen einzelnen Barcode nah und scharf aufnehmen. Die Karte liest ihn lokal auf dem iPhone aus. Alternativ die Ziffern manuell eingeben.
 3. Kategorie prüfen und **Einbuchen** antippen. Bei einem neuen Barcode sucht der Pi anschließend im Hintergrund nach Produktdaten und Bild. Bis dahin erscheint der Barcode in der Liste.
 

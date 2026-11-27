@@ -1,0 +1,17 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect the pantry",
+        "data": {"url": "Raspberry Pi REST URL", "token": "REST token"}
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not connect. Check the REST URL, service and token.",
+      "read_only": "The REST interface is read-only. Update the Pi service and set its REST token.",
+      "invalid_url": "Enter an HTTP or HTTPS address with a port and without a path.",
+      "invalid_token": "Enter a REST token without spaces."
+    },
+    "abort": {"already_configured": "This pantry is already configured."}
+  }
+}

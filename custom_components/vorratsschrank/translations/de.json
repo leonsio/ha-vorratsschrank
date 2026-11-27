@@ -1,0 +1,17 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Vorratsschrank verbinden",
+        "data": {"url": "REST-Adresse des Raspberry Pi", "token": "REST-Token"}
+      }
+    },
+    "error": {
+      "cannot_connect": "Verbindung fehlgeschlagen. REST-Adresse, Dienst und Token prüfen.",
+      "read_only": "Die REST-Schnittstelle erlaubt nur Lesen. Pi-Dienst aktualisieren und das REST-Token setzen.",
+      "invalid_url": "HTTP- oder HTTPS-Adresse mit Port ohne Pfad eingeben.",
+      "invalid_token": "Ein REST-Token ohne Leerzeichen eingeben."
+    },
+    "abort": {"already_configured": "Dieser Vorratsschrank ist bereits eingerichtet."}
+  }
+}

@@ -1,0 +1,1 @@
+# Vorratsschrank für Home Assistant

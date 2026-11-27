@@ -83,7 +83,7 @@ class VorratsschrankCard extends HTMLElement {
       button { cursor: pointer; }
       button:disabled { opacity: .5; cursor: default; }
       .primary { color: var(--text-primary-color); background: var(--primary-color); }
-      details { margin-top: 8px; }
+      details { flex: 1; min-width: 0; }
       summary { min-height: 34px; cursor: pointer; }
       form { margin: 10px 0; }
       p { margin: 8px 0; overflow-wrap: anywhere; }
@@ -93,6 +93,10 @@ class VorratsschrankCard extends HTMLElement {
     this.status = element("p", "", {class: "status", role: "status", "aria-live": "polite"});
     this.filter = element("select", undefined, {"aria-label": "Bestand nach Kategorie filtern"});
     this.filter.onchange = () => this.renderList();
+    this.search = element("input", undefined, {
+      type: "search", placeholder: "Name, Marke oder EAN", "aria-label": "Bestand durchsuchen",
+    });
+    this.search.oninput = () => this.renderList();
     this.category = element("select", undefined, {"aria-label": "Kategorie für Check-in"});
     this.code = element("input", undefined, {
       "aria-label": "Barcode", placeholder: "Barcode", inputmode: "numeric", maxlength: "256",
@@ -114,7 +118,7 @@ class VorratsschrankCard extends HTMLElement {
       });
     };
     const toolbar = element("div", undefined, {class: "toolbar"});
-    toolbar.append(this.camera, this.filter);
+    toolbar.append(this.camera, this.search, this.filter);
     this.card.append(element("h2", this.config?.title || "Vorratsschrank"), toolbar, this.file, this.form, this.status, this.list);
     this.shadowRoot.replaceChildren(style, this.card);
     this.pictures = new Map();
@@ -233,9 +237,13 @@ class VorratsschrankCard extends HTMLElement {
     if (!this.data) return;
     const open = new Set([...this.list.querySelectorAll("details[open]")].map(node => node.dataset.key));
     this.observer.disconnect();
-    const rows = this.data.items.filter(item => !this.filter.value || String(item.category_id) === this.filter.value);
+    const query = this.search.value.trim().toLocaleLowerCase();
+    const rows = this.data.items.filter(item =>
+      (!this.filter.value || String(item.category_id) === this.filter.value) &&
+      [item.name, item.brand, item.ean].some(value => value?.toLocaleLowerCase().includes(query))
+    );
     this.list.replaceChildren(...rows.map(item => this.row(item, open)));
-    if (!rows.length) this.list.append(element("p", "Hier ist kein Bestand vorhanden."));
+    if (!rows.length) this.list.append(element("p", query ? "Keine passenden Produkte." : "Hier ist kein Bestand vorhanden."));
     this.setBusy(this.busy);
   }
 
@@ -245,24 +253,42 @@ class VorratsschrankCard extends HTMLElement {
     if (item.image_path) {
       const picture = element("img", undefined, {alt: ""});
       picture.dataset.ean = item.ean;
+      picture.dataset.version = item.image_version || "";
       row.append(picture);
       this.observer.observe(picture);
     }
     const description = element("div", undefined, {class: "description"});
     description.append(element("strong", item.name), element("small", `${item.category} · ${item.quantity} Stück`));
     const change = (action, data = {}) => this.run(async () => {
-      await this.action(action, {code: item.ean, category_id: item.category_id, ...data});
-      this.notice("Bestand aktualisiert.");
+      const result = await this.action(action, {code: item.ean, category_id: item.category_id, ...data});
+      if (action === "refresh") {
+        this.notice(result.queued ? "Produktsuche eingeplant." : "Produktsuche läuft bereits.");
+      } else {
+        this.notice("Bestand aktualisiert.");
+      }
     });
     const minus = this.button("−", () => change("out"));
     minus.setAttribute("aria-label", `Ein Stück ${item.name} entnehmen`);
     const plus = this.button("+", () => change("in"));
     plus.setAttribute("aria-label", `Ein Stück ${item.name} hinzufügen`);
-    row.append(description, minus, plus);
+
     const details = element("details");
     details.dataset.key = `${item.ean}:${item.category_id}`;
     details.open = open.has(details.dataset.key);
-    details.append(element("summary", "Details und Bearbeiten"));
+    const summary = element("summary", undefined, {class: "description"});
+    summary.append(...description.childNodes);
+    details.append(summary);
+    details.append(this.button("Produktdaten und Bild aktualisieren", () => change("refresh")));
+    const targets = this.data.categories.filter(({id}) => id !== item.category_id);
+    if (targets.length) {
+      const move = element("form");
+      const target = element("select", undefined, {"aria-label": "Zielkategorie"});
+      target.append(...targets.map(({id, name}) => element("option", name, {value: id})));
+      move.append(target, this.button("Kategorie wechseln", () =>
+        change("move", {target_category_id: Number(target.value)})));
+      move.onsubmit = event => event.preventDefault();
+      details.append(move);
+    }
     details.append(element("p", [item.ean, item.brand, item.package_size].filter(Boolean).join(" · ")));
     if (item.ingredients) details.append(element("p", item.ingredients));
     details.append(this.button("Name ändern", () => {
@@ -280,19 +306,24 @@ class VorratsschrankCard extends HTMLElement {
     details.append(this.button("Bestand hier löschen", () => {
       if (window.confirm(`Alle ${item.quantity} Stück von ${item.name} aus ${item.category} entfernen?`)) change("delete");
     }));
-    node.append(row, details);
+    row.append(details, minus, plus);
+    node.append(row);
     return node;
   }
 
   async showImage(target) {
-    const {ean} = target.dataset;
-    if (!this.pictures.has(ean)) this.pictures.set(ean, this.request("image", {ean}));
+    const {ean, version} = target.dataset;
+    let picture = this.pictures.get(ean);
+    if (picture?.version !== version) {
+      picture = {version, request: this.request("image", {ean})};
+      this.pictures.set(ean, picture);
+    }
     try {
-      const data = await this.pictures.get(ean);
+      const data = await picture.request;
       if (data) target.src = `data:image/jpeg;base64,${data}`;
       else target.hidden = true;
     } catch {
-      this.pictures.delete(ean);
+      if (this.pictures.get(ean) === picture) this.pictures.delete(ean);
       target.hidden = true;
     }
   }

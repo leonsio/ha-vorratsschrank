@@ -4,7 +4,7 @@ Lovelace-Karte für den [Barcode-Vorratsschrank auf dem Raspberry Pi](https://gi
 
 ## 1. Raspberry Pi vorbereiten
 
-Den [Vorratsschrank-Dienst aktualisieren](https://github.com/leonsio/Vorratsschrank#vorhandene-installation-aktualisieren). Die Schreib-API ist ab Commit [91cdb6e](https://github.com/leonsio/Vorratsschrank/commit/91cdb6ea71da41d7fa76131b4895905e37f46b9c) enthalten. In `/etc/barcode-vorrat/config.json` den vorhandenen Abschnitt `rest` anpassen:
+Den [Vorratsschrank-Dienst aktualisieren](https://github.com/leonsio/Vorratsschrank#vorhandene-installation-aktualisieren). Für **Produktdaten und Bild aktualisieren** und **Kategorie wechseln** wird der entsprechend aktualisierte Pi-Dienst benötigt. Die Schreib-API ist ab Commit [91cdb6e](https://github.com/leonsio/Vorratsschrank/commit/91cdb6ea71da41d7fa76131b4895905e37f46b9c) enthalten. In `/etc/barcode-vorrat/config.json` den vorhandenen Abschnitt `rest` anpassen:
 
 ```json
 "rest": {
@@ -40,6 +40,10 @@ title: Vorratsschrank
 ```
 
 Bei mehreren Raspberry Pis lässt sich optional mit `entry_id` die gewünschte Home-Assistant-Konfigurations-ID angeben. Ohne diese Angabe verwendet die Karte den ersten eingerichteten Vorratsschrank. Alle angemeldeten Home-Assistant-Benutzer können den Bestand über die Karte bearbeiten.
+
+## Bestand verwalten
+
+Die Suche findet Produkte nach Name, Marke oder EAN und lässt sich mit dem Kategoriefilter kombinieren. Tippe auf einen Produktnamen, um die Produktsuche im Hintergrund erneut anzustoßen oder alle Stücke der aktuellen Zeile samt MHD in eine andere Kategorie zu verschieben.
 
 ## Mit dem iPhone einbuchen
 
